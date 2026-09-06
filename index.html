@@ -460,6 +460,14 @@
   <div class="modal-box">
     <div class="modal-title">確認歸還</div>
     <div class="modal-desc" id="returnModalDesc"></div>
+    <div class="field" style="text-align:left; margin-bottom:14px;">
+      <label style="font-size:0.82rem;">歸還人姓名</label>
+      <input type="text" id="returnerName">
+    </div>
+    <div class="field" style="text-align:left; margin-bottom:8px;">
+      <label style="font-size:0.82rem;">人事號</label>
+      <input type="text" id="returnerId">
+    </div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeReturnModal()">取消</button>
       <button class="modal-confirm" onclick="confirmReturn()">確認歸還</button>
@@ -498,6 +506,8 @@
       borrowDate: row["借用日期"],
       status: row["狀態"],
       returnedAt: row["歸還時間"],
+      returnerName: row["歸還人姓名"],
+      returnerId: row["歸還人事號"],
     };
   }
 
@@ -646,7 +656,7 @@
     container.innerHTML = filtered.map(r => {
       const isReturned = r.status === '已歸還';
       const metaLast = isReturned
-        ? `<span>已於 ${formatDateTime(r.returnedAt)} 歸還</span>`
+        ? `<span>已於 ${formatDateTime(r.returnedAt)} 由 ${r.returnerName || ''} ${r.returnerId || ''} 歸還</span>`
         : `<span>已借出 ${daysSince(r.borrowDate)} 天</span>`;
       const rightSide = isReturned
         ? `<span class="status-badge" style="background:#efe6d8; color:var(--muted);">已歸還</span>`
@@ -678,6 +688,8 @@
     pendingReturnId = id;
     document.getElementById('returnModalDesc').textContent =
       `確定要將「${record.item}」標記為已歸還嗎？`;
+    document.getElementById('returnerName').value = '';
+    document.getElementById('returnerId').value = '';
     document.getElementById('returnModal').classList.add('show');
   }
 
@@ -690,6 +702,13 @@
     const record = records.find(r => r.id === pendingReturnId);
     if (!record) return;
 
+    const returnerName = document.getElementById('returnerName').value.trim();
+    const returnerId = document.getElementById('returnerId').value.trim();
+    if (!returnerName || !returnerId) {
+      showToast("請填寫歸還人姓名與人事號");
+      return;
+    }
+
     const confirmBtn = document.querySelector('.modal-confirm');
     confirmBtn.disabled = true;
     confirmBtn.textContent = "處理中…";
@@ -698,15 +717,19 @@
       const res = await fetch(GAS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ action: "return", id: record.id }),
+        body: JSON.stringify({
+          action: "return",
+          id: record.id,
+          歸還人姓名: returnerName,
+          歸還人事號: returnerId,
+        }),
       });
       const result = await res.json();
       if (!result.success) throw new Error(result.error || '更新失敗');
 
-      records = records.filter(r => r.id !== pendingReturnId);
       document.getElementById('returnModal').classList.remove('show');
-      renderList();
       showToast(`「${record.item}」已標記為歸還`);
+      await loadRecords(); // 重新向後端拉最新資料，確保已歸還清單同步更新
     } catch (err) {
       showToast("歸還失敗，請稍後再試");
     } finally {
