@@ -136,7 +136,8 @@
 
   input[type="datetime-local"],
   input[type="date"] {
-    font-size: 0.92rem;
+    font-size: 0.76rem;
+    padding: 10px 8px;
   }
 
   input:focus, select:focus {
@@ -447,6 +448,9 @@
         <input type="date" id="filterDateTo">
       </div>
     </div>
+    <div style="font-size:0.76rem; color:var(--muted); margin:-8px 0 16px;">
+      ※ 未指定日期時，預設只顯示最近 14 天內的紀錄；查詢 14 天以前的紀錄，請至少填寫「借用日期（起）」或「（迄）」其中一項
+    </div>
     <button type="button" id="searchBtn" class="return-btn" style="width:100%; padding:12px; margin-bottom:20px;">查詢</button>
     <div id="listContainer"></div>
   </section>
@@ -637,19 +641,31 @@
     const dateTo = document.getElementById('filterDateTo').value;
     const container = document.getElementById('listContainer');
 
+    // 未指定任一日期時，預設只顯示最近 14 天內的紀錄，避免一次撈出全部歷史資料
+    let cutoff = null;
+    if (!dateFrom && !dateTo) {
+      const d = new Date();
+      d.setDate(d.getDate() - 14);
+      cutoff = d.toISOString().slice(0,10);
+    }
+
     let filtered = records.filter(r => {
       if (statusFilter === 'active' && r.status !== '借用中') return false;
       if (statusFilter === 'returned' && r.status !== '已歸還') return false;
       if (unitFilter && r.borrowUnit !== unitFilter) return false;
       if (keyword && !(r.item.toLowerCase().includes(keyword) || r.borrowerName.toLowerCase().includes(keyword))) return false;
       const borrowDateOnly = r.borrowDate.slice(0,10);
+      if (cutoff && borrowDateOnly < cutoff) return false;
       if (dateFrom && borrowDateOnly < dateFrom) return false;
       if (dateTo && borrowDateOnly > dateTo) return false;
       return true;
     });
 
     if (filtered.length === 0) {
-      container.innerHTML = '<div class="empty-note">目前沒有符合條件的借用紀錄</div>';
+      const msg = cutoff
+        ? '最近 14 天內沒有符合條件的紀錄，如需查更早的資料，請填寫借用日期（起）或（迄）'
+        : '目前沒有符合條件的借用紀錄';
+      container.innerHTML = `<div class="empty-note">${msg}</div>`;
       return;
     }
 
