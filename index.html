@@ -136,18 +136,16 @@
     color: var(--ink);
   }
 
-  input[type="datetime-local"],
-  input[type="date"] {
-    font-size: 0.82rem;
-    padding: 11px 8px;
-    min-height: 46px;
-    box-sizing: border-box;
-  }
 
   input:focus, select:focus {
     outline: none;
     border-color: var(--teal);
     box-shadow: 0 0 0 3px rgba(185,138,94,0.18);
+  }
+
+  input[readonly] {
+    cursor: pointer;
+    background: #fff;
   }
 
   .qty-row {
@@ -284,6 +282,94 @@
     transform: translateX(-50%) translateY(0);
   }
 
+  .picker-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 60;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 28px rgba(74,55,40,0.22);
+    padding: 14px;
+    width: 270px;
+    max-width: 85vw;
+  }
+
+  .picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: var(--teal-deep);
+    font-size: 0.9rem;
+  }
+
+  .picker-header button {
+    background: none;
+    border: none;
+    font-size: 1.15rem;
+    color: var(--teal-deep);
+    cursor: pointer;
+    padding: 2px 10px;
+    font-family: inherit;
+  }
+
+  .picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    text-align: center;
+  }
+
+  .picker-weekday {
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding: 4px 0;
+  }
+
+  .picker-day {
+    padding: 7px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    background: none;
+    border: none;
+    font-family: inherit;
+    color: var(--ink);
+  }
+
+  .picker-day.empty { visibility: hidden; cursor: default; }
+  .picker-day:not(.empty):hover { background: var(--paper); }
+  .picker-day.selected { background: var(--teal-deep); color: #fff; font-weight: 700; }
+  .picker-day.today:not(.selected) { border: 1px solid var(--teal); }
+
+  .picker-time-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .picker-time-row select {
+    flex: 1;
+    min-height: 40px;
+  }
+
+  .picker-confirm-btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    background: var(--teal-deep);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
   .modal-overlay {
     display: none;
     position: fixed;
@@ -368,7 +454,7 @@
       <form id="borrowForm">
         <div class="field">
           <label>借用日期</label>
-          <input type="datetime-local" id="borrowDate" required>
+          <input type="text" id="borrowDate" placeholder="YYYY-MM-DD HH:mm" readonly required>
         </div>
 
         <div class="row2">
@@ -445,11 +531,11 @@
     <div class="date-filter-row">
       <div class="field">
         <label style="font-size:0.78rem; margin-bottom:4px;">借用日期（起）</label>
-        <input type="date" id="filterDateFrom">
+        <input type="text" id="filterDateFrom" placeholder="YYYY-MM-DD" readonly>
       </div>
       <div class="field">
         <label style="font-size:0.78rem; margin-bottom:4px;">借用日期（迄）</label>
-        <input type="date" id="filterDateTo">
+        <input type="text" id="filterDateTo" placeholder="YYYY-MM-DD" readonly>
       </div>
     </div>
     <div style="font-size:0.76rem; color:var(--muted); margin:-8px 0 16px;">
@@ -544,24 +630,175 @@
     else inp.removeAttribute('required');
   }
 
+  // 寬鬆解析日期字串：
+  // - Sheet 寫入的時間戳記（如歸還時間）是完整 ISO 格式，交給瀏覽器原生解析（避免時區算錯）
+  // - 使用者手動輸入的 "YYYY-MM-DD HH:mm" 純文字格式，手動解析避免 Safari 解析失敗
+  function parseFlexDate(dateStr) {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const str = String(dateStr);
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(str) || /Z$/.test(str)) {
+      const d = new Date(str);
+      return isNaN(d) ? null : d;
+    }
+    const m = str.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+    if (m) {
+      return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0));
+    }
+    const fallback = new Date(str);
+    return isNaN(fallback) ? null : fallback;
+  }
+
   function daysSince(dateStr) {
-    const start = new Date(dateStr);
+    const start = parseFlexDate(dateStr);
+    if (!start) return '';
     const diff = Math.floor((new Date() - start) / (1000*60*60*24));
     return diff;
   }
 
   function formatDateTime(dateStr) {
     if (!dateStr) return '';
-    const d = new Date(dateStr);
-    if (isNaN(d)) return dateStr;
+    const d = parseFlexDate(dateStr);
+    if (!d) return dateStr;
     const pad = n => String(n).padStart(2, '0');
     return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  // 借用日期預設當下時間
-  const now = new Date();
-  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-  document.getElementById('borrowDate').value = now.toISOString().slice(0,16);
+  // 借用日期預設當下時間（YYYY-MM-DD HH:mm，純文字框，可手動修改）
+  function formatNow() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  document.getElementById('borrowDate').value = formatNow();
+
+  // ---- 自訂日曆選擇器（不用原生 input type=date/datetime-local，避免不同手機排版跑掉）----
+  function initDatePicker(inputId, opts) {
+    opts = opts || {};
+    const input = document.getElementById(inputId);
+    const wrapper = input.parentElement;
+    wrapper.style.position = 'relative';
+
+    const pad = n => String(n).padStart(2, '0');
+    let popup = null;
+    let viewYear, viewMonth, selDate, selHour, selMinute;
+
+    function parseCurrent() {
+      const v = input.value;
+      const m = v && v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+      const now = new Date();
+      if (m) {
+        return {
+          y: +m[1], mo: +m[2]-1, d: +m[3],
+          h: m[4] !== undefined ? +m[4] : now.getHours(),
+          mi: m[5] !== undefined ? +m[5] : now.getMinutes(),
+        };
+      }
+      return { y: now.getFullYear(), mo: now.getMonth(), d: now.getDate(), h: now.getHours(), mi: now.getMinutes() };
+    }
+
+    function closePopup() {
+      if (popup) { popup.remove(); popup = null; }
+      document.removeEventListener('click', outsideClickHandler, true);
+    }
+
+    function outsideClickHandler(e) {
+      if (popup && !popup.contains(e.target) && e.target !== input) closePopup();
+    }
+
+    function commit() {
+      input.value = opts.withTime
+        ? `${selDate.y}-${pad(selDate.mo+1)}-${pad(selDate.d)} ${pad(selHour)}:${pad(selMinute)}`
+        : `${selDate.y}-${pad(selDate.mo+1)}-${pad(selDate.d)}`;
+      input.dispatchEvent(new Event('change'));
+      closePopup();
+    }
+
+    function render() {
+      const first = new Date(viewYear, viewMonth, 1);
+      const startWeekday = first.getDay();
+      const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+      const today = new Date();
+
+      let daysHtml = '';
+      for (let i = 0; i < startWeekday; i++) daysHtml += `<div class="picker-day empty"></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isSelected = selDate.y === viewYear && selDate.mo === viewMonth && selDate.d === d;
+        const isToday = today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === d;
+        daysHtml += `<button type="button" class="picker-day${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}" data-day="${d}">${d}</button>`;
+      }
+
+      let timeHtml = '';
+      if (opts.withTime) {
+        let hourOptions = '';
+        for (let h = 0; h < 24; h++) hourOptions += `<option value="${h}"${h === selHour ? ' selected' : ''}>${pad(h)}</option>`;
+        let minOptions = '';
+        for (let mi = 0; mi < 60; mi += 5) minOptions += `<option value="${mi}"${mi === selMinute ? ' selected' : ''}>${pad(mi)}</option>`;
+        timeHtml = `
+          <div class="picker-time-row">
+            <select id="${inputId}_hour">${hourOptions}</select>
+            <span>:</span>
+            <select id="${inputId}_min">${minOptions}</select>
+          </div>
+          <button type="button" class="picker-confirm-btn" id="${inputId}_confirm">確定</button>
+        `;
+      }
+
+      popup.innerHTML = `
+        <div class="picker-header">
+          <button type="button" id="${inputId}_prev">‹</button>
+          <span>${viewYear} 年 ${viewMonth+1} 月</span>
+          <button type="button" id="${inputId}_next">›</button>
+        </div>
+        <div class="picker-grid">
+          <div class="picker-weekday">日</div><div class="picker-weekday">一</div><div class="picker-weekday">二</div>
+          <div class="picker-weekday">三</div><div class="picker-weekday">四</div><div class="picker-weekday">五</div><div class="picker-weekday">六</div>
+          ${daysHtml}
+        </div>
+        ${timeHtml}
+      `;
+
+      popup.querySelector(`#${inputId}_prev`).addEventListener('click', () => {
+        viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        render();
+      });
+      popup.querySelector(`#${inputId}_next`).addEventListener('click', () => {
+        viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        render();
+      });
+      popup.querySelectorAll('.picker-day:not(.empty)').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selDate = { y: viewYear, mo: viewMonth, d: +btn.dataset.day };
+          if (opts.withTime) render();
+          else commit();
+        });
+      });
+      if (opts.withTime) {
+        popup.querySelector(`#${inputId}_hour`).addEventListener('change', (e) => { selHour = +e.target.value; });
+        popup.querySelector(`#${inputId}_min`).addEventListener('change', (e) => { selMinute = +e.target.value; });
+        popup.querySelector(`#${inputId}_confirm`).addEventListener('click', commit);
+      }
+    }
+
+    input.addEventListener('click', () => {
+      if (popup) { closePopup(); return; }
+      const cur = parseCurrent();
+      viewYear = cur.y; viewMonth = cur.mo;
+      selDate = { y: cur.y, mo: cur.mo, d: cur.d };
+      selHour = cur.h; selMinute = cur.mi;
+
+      popup = document.createElement('div');
+      popup.className = 'picker-popup';
+      wrapper.appendChild(popup);
+      render();
+
+      setTimeout(() => document.addEventListener('click', outsideClickHandler, true), 0);
+    });
+  }
+
+  initDatePicker('borrowDate', { withTime: true });
+  initDatePicker('filterDateFrom', { withTime: false });
+  initDatePicker('filterDateTo', { withTime: false });
 
   // Tab 切換
   document.querySelectorAll('.tabs button').forEach(btn => {
@@ -618,7 +855,7 @@
       const summaryUnit = payload["借用單位"];
 
       e.target.reset();
-      document.getElementById('borrowDate').value = new Date().toISOString().slice(0,16);
+      document.getElementById('borrowDate').value = formatNow();
       document.getElementById('borrowUnitOther').style.display = 'none';
       document.getElementById('lendUnitOther').style.display = 'none';
 
