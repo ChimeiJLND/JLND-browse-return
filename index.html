@@ -891,7 +891,7 @@
       document.getElementById('lendUnitOther').style.display = 'none';
 
       document.getElementById('successModalDesc').textContent =
-        `${summaryUnit} 借用「${summaryItem}」（${summaryQty}）已登記成功`;
+        `${summaryUnit} 借用「${summaryItem}」，數量：${summaryQty}，已登記成功`;
       document.getElementById('successModal').classList.add('show');
     } catch (err) {
       showToast("送出失敗，請稍後再試");
@@ -955,7 +955,7 @@
       return `
       <div class="list-card">
         <div class="list-info">
-          <div class="item-name">${r.item}（${r.qty}）</div>
+          <div class="item-name">${r.item}　數量：${r.qty}</div>
           <div class="meta">
             <span>借用單位：${r.borrowUnit}</span>
             <span>借出單位：${r.lendUnit}</span>
