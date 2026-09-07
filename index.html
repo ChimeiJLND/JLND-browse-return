@@ -511,18 +511,36 @@
 
   <!-- 借用中清單 -->
   <section class="panel" id="list">
-    <div class="filter-bar" style="flex-wrap: wrap;">
+    <div class="field" style="margin-bottom:16px;">
+      <label style="font-size:0.78rem; margin-bottom:4px;">狀態</label>
       <select id="filterStatus">
         <option value="active">借用中</option>
         <option value="returned">已歸還</option>
         <option value="all">全部</option>
       </select>
-      <select id="filterUnit">
-        <option value="">全部借用單位</option>
-        <option>2AI</option><option>3A</option><option>5A</option><option>6A</option>
-        <option>RCW</option><option>7A</option><option>7B</option><option>ER</option>
-        <option>OPD</option><option>HR</option><option>OR</option><option>護理部</option>
-      </select>
+    </div>
+    <div class="row2" style="margin-bottom:8px;">
+      <div class="field">
+        <label style="font-size:0.78rem; margin-bottom:4px;">借用單位（誰借的）</label>
+        <select id="filterUnit">
+          <option value="">全部借用單位</option>
+          <option>2AI</option><option>3A</option><option>5A</option><option>6A</option>
+          <option>RCW</option><option>7A</option><option>7B</option><option>ER</option>
+          <option>OPD</option><option>HR</option><option>OR</option><option>護理部</option>
+        </select>
+      </div>
+      <div class="field">
+        <label style="font-size:0.78rem; margin-bottom:4px;">借出單位（東西原本是誰的）</label>
+        <select id="filterLendUnit">
+          <option value="">全部借出單位</option>
+          <option>2AI</option><option>3A</option><option>5A</option><option>6A</option>
+          <option>RCW</option><option>7A</option><option>7B</option><option>ER</option>
+          <option>OPD</option><option>HR</option><option>OR</option><option>護理部</option>
+        </select>
+      </div>
+    </div>
+    <div style="font-size:0.76rem; color:var(--muted); margin:-2px 0 16px;">
+      ※ 兩個單位欄位可以只選一個查詢，也可以兩個一起選（會同時符合兩個條件）
     </div>
     <div class="field" style="margin-bottom:16px;">
       <label style="font-size:0.78rem; margin-bottom:4px;">關鍵字（物品名稱／借用人）</label>
@@ -554,6 +572,9 @@
   <div class="modal-box">
     <div class="modal-title">確認歸還</div>
     <div class="modal-desc" id="returnModalDesc"></div>
+    <div style="font-size:0.78rem; color:var(--rust); text-align:left; margin-bottom:14px; padding:10px 12px; background:#fbeae6; border-radius:6px;">
+      ⚠️ 提醒：物品必須確實還給「借出單位」（債主）本人才可以按下歸還喔！
+    </div>
     <div class="field" style="text-align:left; margin-bottom:14px;">
       <label style="font-size:0.82rem;">歸還人姓名</label>
       <input type="text" id="returnerName">
@@ -887,6 +908,7 @@
   function renderList() {
     const statusFilter = document.getElementById('filterStatus').value;
     const unitFilter = document.getElementById('filterUnit').value;
+    const lendUnitFilter = document.getElementById('filterLendUnit').value;
     const keyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
     const dateFrom = document.getElementById('filterDateFrom').value;
     const dateTo = document.getElementById('filterDateTo').value;
@@ -904,6 +926,7 @@
       if (statusFilter === 'active' && r.status !== '借用中') return false;
       if (statusFilter === 'returned' && r.status !== '已歸還') return false;
       if (unitFilter && r.borrowUnit !== unitFilter) return false;
+      if (lendUnitFilter && r.lendUnit !== lendUnitFilter) return false;
       if (keyword && !(String(r.item).toLowerCase().includes(keyword) || String(r.borrowerName).toLowerCase().includes(keyword))) return false;
       const borrowDateOnly = r.borrowDate.slice(0,10);
       if (cutoff && borrowDateOnly < cutoff) return false;
@@ -955,7 +978,7 @@
     if (!record) return;
     pendingReturnId = id;
     document.getElementById('returnModalDesc').textContent =
-      `確定要將「${record.item}」標記為已歸還嗎？`;
+      `確定要將「${record.item}」標記為已歸還嗎？（借出單位：${record.lendUnit}）`;
     document.getElementById('returnerName').value = '';
     document.getElementById('returnerId').value = '';
     document.getElementById('returnModal').classList.add('show');
@@ -972,6 +995,7 @@
 
     const returnerName = document.getElementById('returnerName').value.trim();
     const returnerId = document.getElementById('returnerId').value.trim();
+
     if (!returnerName || !returnerId) {
       showToast("請填寫歸還人姓名與人事號");
       return;
@@ -1009,6 +1033,7 @@
 
   document.getElementById('filterStatus').addEventListener('change', renderList);
   document.getElementById('filterUnit').addEventListener('change', renderList);
+  document.getElementById('filterLendUnit').addEventListener('change', renderList);
   document.getElementById('searchBtn').addEventListener('click', renderList);
 </script>
 
