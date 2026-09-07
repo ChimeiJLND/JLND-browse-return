@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>佳里奇美護理部借用申請單</title>
+<style>
+  :root {
+    --ink: #4a3728;
+    --paper: #f8f0e3;
+    --line: #e3d2b8;
+    --teal: #b98a5e;
+    --teal-deep: #8a5a35;
+    --amber: #d9a441;
+    --rust: #c07850;
+    --card: #fffaf2;
+    --muted: #9c8064;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
+  }
+
+  header.page {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 3px solid var(--teal-deep);
+    padding-bottom: 16px;
+    margin-bottom: 28px;
+  }
+
+  header.page h1 {
+    font-size: 1.5rem;
+    letter-spacing: 0.04em;
+    margin: 0;
+    color: var(--teal-deep);
+    font-weight: 700;
+  }
+
+  header.page span {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 24px;
+  }
+
+  .tabs button {
+    flex: 1;
+    padding: 12px 0;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    border-radius: 6px 6px 0 0;
+    font-family: inherit;
+  }
+
+  .tabs button.active {
+    background: var(--teal-deep);
+    color: #fff;
+    border-color: var(--teal-deep);
+    font-weight: 700;
+  }
+
+  section.panel {
+    display: none;
+  }
+
+  section.panel.active {
+    display: block;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 28px 24px;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 0.88rem;
+    color: var(--teal-deep);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .field .hint {
+    font-weight: 400;
+    color: var(--muted);
+    font-size: 0.78rem;
+    margin-left: 6px;
+  }
+
+  .row2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  input, select {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: inherit;
+    background: #fff;
+    color: var(--ink);
+  }
+
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(185,138,94,0.18);
+  }
+
+  input[readonly] {
+    cursor: pointer;
+    background: #fff;
+  }
+
+  .qty-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 16px;
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--teal-deep);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.02rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.02em;
+    margin-top: 8px;
+  }
+
+  .submit-btn:hover { background: var(--teal); }
+
+  .list-card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--card);
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .list-info .item-name {
+    font-weight: 700;
+    font-size: 1.02rem;
+    margin-bottom: 4px;
+  }
+
+  .list-info .meta {
+    font-size: 0.83rem;
+    color: var(--muted);
+  }
+
+  .list-info .meta span + span::before {
+    content: "・";
+    color: var(--line);
+  }
+
+  .status-badge {
+    font-size: 0.78rem;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .status-active { background: #fdf1de; color: var(--amber); }
+  .status-overdue { background: #fbeae6; color: var(--rust); }
+
+  .return-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1.5px solid var(--teal-deep);
+    color: var(--teal-deep);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  .return-btn:hover { background: var(--teal-deep); color: #fff; }
+
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .filter-bar select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .date-filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+
+  .date-filter-row .field {
+    margin-bottom: 0;
+  }
+
+  .empty-note {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px 0;
+    font-size: 0.9rem;
+  }
+
+  .contact-footer {
+    margin-top: 36px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--teal-deep);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .picker-popup {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 60;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 28px rgba(74,55,40,0.22);
+    padding: 14px;
+    width: 270px;
+    max-width: 85vw;
+  }
+
+  .picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 700;
+    color: var(--teal-deep);
+    font-size: 0.9rem;
+  }
+
+  .picker-header button {
+    background: none;
+    border: none;
+    font-size: 1.15rem;
+    color: var(--teal-deep);
+    cursor: pointer;
+    padding: 2px 10px;
+    font-family: inherit;
+  }
+
+  .picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    text-align: center;
+  }
+
+  .picker-weekday {
+    font-size: 0.7rem;
+    color: var(--muted);
+    padding: 4px 0;
+  }
+
+  .picker-day {
+    padding: 7px 0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    background: none;
+    border: none;
+    font-family: inherit;
+    color: var(--ink);
+  }
+
+  .picker-day.empty { visibility: hidden; cursor: default; }
+  .picker-day:not(.empty):hover { background: var(--paper); }
+  .picker-day.selected { background: var(--teal-deep); color: #fff; font-weight: 700; }
+  .picker-day.today:not(.selected) { border: 1px solid var(--teal); }
+
+  .picker-time-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .picker-time-row select {
+    flex: 1;
+    min-height: 40px;
+  }
+
+  .picker-confirm-btn {
+    margin-top: 12px;
+    width: 100%;
+    padding: 10px;
+    background: var(--teal-deep);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(74,55,40,0.45);
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 50;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+  }
+
+  .modal-box {
+    background: #fff;
+    border-radius: 10px;
+    padding: 28px 24px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .modal-box .modal-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--teal-deep);
+    margin-bottom: 8px;
+  }
+
+  .modal-box .modal-desc {
+    font-size: 0.88rem;
+    color: var(--muted);
+    margin-bottom: 22px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+
+  .modal-actions button {
+    flex: 1;
+    padding: 11px;
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    border: none;
+  }
+
+  .modal-cancel {
+    background: var(--paper);
+    color: var(--muted);
+    border: 1px solid var(--line) !important;
+  }
+
+  .modal-confirm {
+    background: var(--teal-deep);
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="page">
+    <h1>佳里奇美護理部借用申請單</h1>
+    <span>儀器・衛材借還登記</span>
+  </header>
+
+  <div class="tabs">
+    <button class="active" data-tab="apply">借用申請</button>
+    <button data-tab="list">借還清單</button>
+  </div>
+
+  <!-- 借用申請 -->
+  <section class="panel active" id="apply">
+    <div class="card">
+      <form id="borrowForm">
+        <div class="field">
+          <label>借用日期</label>
+          <input type="text" id="borrowDate" placeholder="YYYY-MM-DD HH:mm" readonly required>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>借用單位</label>
+            <select id="borrowUnit" required onchange="toggleOther('borrowUnit','borrowUnitOther')">
+              <option value="">請選擇</option>
+              <option>2AI</option><option>3A</option><option>5A</option><option>6A</option>
+              <option>RCW</option><option>7A</option><option>7B</option><option>ER</option>
+              <option>OPD</option><option>HR</option><option>OR</option><option>護理部</option>
+              <option>其他單位</option>
+            </select>
+            <input type="text" id="borrowUnitOther" placeholder="請輸入單位名稱" style="display:none; margin-top:8px;">
+          </div>
+          <div class="field">
+            <label>借出單位</label>
+            <select id="lendUnit" required onchange="toggleOther('lendUnit','lendUnitOther')">
+              <option value="">請選擇</option>
+              <option>2AI</option><option>3A</option><option>5A</option><option>6A</option>
+              <option>RCW</option><option>7A</option><option>7B</option><option>ER</option>
+              <option>OPD</option><option>HR</option><option>OR</option><option>護理部</option>
+              <option>其他單位</option>
+            </select>
+            <input type="text" id="lendUnitOther" placeholder="請輸入單位名稱" style="display:none; margin-top:8px;">
+          </div>
+        </div>
+
+        <div class="qty-row">
+          <div class="field">
+            <label>物品名稱</label>
+            <input type="text" id="itemName" placeholder="例：血糖機、Foley導管衛材包" required>
+          </div>
+          <div class="field">
+            <label>數量</label>
+            <input type="number" id="itemQty" min="1" value="1" required>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label>借用人姓名</label>
+            <input type="text" id="borrowerName" required>
+          </div>
+          <div class="field">
+            <label>人事號</label>
+            <input type="text" id="borrowerId" required>
+          </div>
+        </div>
+
+        <button type="submit" class="submit-btn">送出借用申請</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 借用中清單 -->
+  <section class="panel" id="list">
+    <div class="filter-bar" style="flex-wrap: wrap;">
+      <select id="filterStatus">
+        <option value="active">借用中</option>
+        <option value="returned">已歸還</option>
+        <option value="all">全部</option>
+      </select>
+      <select id="filterUnit">
+        <option value="">全部借用單位</option>
+        <option>2AI</option><option>3A</option><option>5A</option><option>6A</option>
+        <option>RCW</option><option>7A</option><option>7B</option><option>ER</option>
+        <option>OPD</option><option>HR</option><option>OR</option><option>護理部</option>
+      </select>
+    </div>
+    <div class="field" style="margin-bottom:16px;">
+      <label style="font-size:0.78rem; margin-bottom:4px;">關鍵字（物品名稱／借用人）</label>
+      <input type="text" id="filterKeyword" placeholder="例：血糖機、王小美">
+    </div>
+    <div class="date-filter-row">
+      <div class="field">
+        <label style="font-size:0.78rem; margin-bottom:4px;">借用日期（起）</label>
+        <input type="text" id="filterDateFrom" placeholder="YYYY-MM-DD" readonly>
+      </div>
+      <div class="field">
+        <label style="font-size:0.78rem; margin-bottom:4px;">借用日期（迄）</label>
+        <input type="text" id="filterDateTo" placeholder="YYYY-MM-DD" readonly>
+      </div>
+    </div>
+    <div style="font-size:0.76rem; color:var(--muted); margin:-8px 0 16px;">
+      ※ 未指定日期時，預設只顯示最近 14 天內的紀錄；查詢 14 天以前的紀錄，請至少填寫「借用日期（起）」或「（迄）」其中一項
+    </div>
+    <button type="button" id="searchBtn" class="return-btn" style="width:100%; padding:12px; margin-bottom:20px;">查詢</button>
+    <div id="listContainer"></div>
+  </section>
+
+  <div class="contact-footer">📞 如有任何疑難雜症，請洽護理部萬能紫姍　分機33008／26-8376</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="returnModal">
+  <div class="modal-box">
+    <div class="modal-title">確認歸還</div>
+    <div class="modal-desc" id="returnModalDesc"></div>
+    <div class="field" style="text-align:left; margin-bottom:14px;">
+      <label style="font-size:0.82rem;">歸還人姓名</label>
+      <input type="text" id="returnerName">
+    </div>
+    <div class="field" style="text-align:left; margin-bottom:8px;">
+      <label style="font-size:0.82rem;">人事號</label>
+      <input type="text" id="returnerId">
+    </div>
+    <div class="modal-actions">
+      <button class="modal-cancel" onclick="closeReturnModal()">取消</button>
+      <button class="modal-confirm" onclick="confirmReturn()">確認歸還</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+  <div class="modal-box">
+    <div class="modal-title">借用成功</div>
+    <div class="modal-desc" id="successModalDesc"></div>
+    <div class="modal-actions">
+      <button class="modal-confirm" style="flex:1;" onclick="closeSuccessModal()">確定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---- 接上 GAS 後端 ----
+  // 部署 Apps Script 為網頁應用程式後，把網址貼在這裡
+  const GAS_URL = "https://script.google.com/macros/s/AKfycby8RLh-LfkVSXpCvZMUUcb_cuwDt8A7OXBWndhU74b9I-1vIoS7boy0r4E9Kb-aRTFq/exec";
+
+  let records = [];
+  let isLoading = false;
+
+  // 把 Sheet 回傳的中文欄位轉成畫面用的內部欄位
+  function mapRecord(row) {
+    return {
+      id: row["序號"],
+      item: row["物品名稱"],
+      qty: row["數量"],
+      borrowUnit: row["借用單位"],
+      lendUnit: row["借出單位"],
+      borrowerName: row["借用人姓名"],
+      borrowerId: row["人事號"],
+      borrowDate: row["借用日期"],
+      status: row["狀態"],
+      returnedAt: row["歸還時間"],
+      returnerName: row["歸還人姓名"],
+      returnerId: row["歸還人事號"],
+    };
+  }
+
+  async function loadRecords() {
+    const container = document.getElementById('listContainer');
+    isLoading = true;
+    container.innerHTML = '<div class="empty-note">載入中…</div>';
+    try {
+      const res = await fetch(GAS_URL);
+      const data = await res.json();
+      records = data.map(mapRecord);
+    } catch (err) {
+      container.innerHTML = '<div class="empty-note">讀取失敗，請確認網路連線或稍後再試</div>';
+      isLoading = false;
+      return;
+    }
+    isLoading = false;
+    renderList();
+  }
+
+  function toggleOther(selectId, inputId) {
+    const sel = document.getElementById(selectId);
+    const inp = document.getElementById(inputId);
+    inp.style.display = sel.value === '其他單位' ? 'block' : 'none';
+    if (sel.value === '其他單位') inp.setAttribute('required','required');
+    else inp.removeAttribute('required');
+  }
+
+  // 寬鬆解析日期字串：
+  // - Sheet 寫入的時間戳記（如歸還時間）是完整 ISO 格式，交給瀏覽器原生解析（避免時區算錯）
+  // - 使用者手動輸入的 "YYYY-MM-DD HH:mm" 純文字格式，手動解析避免 Safari 解析失敗
+  function parseFlexDate(dateStr) {
+    if (!dateStr) return null;
+    if (dateStr instanceof Date) return dateStr;
+    const str = String(dateStr);
+    if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(str) || /Z$/.test(str)) {
+      const d = new Date(str);
+      return isNaN(d) ? null : d;
+    }
+    const m = str.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+    if (m) {
+      return new Date(+m[1], +m[2]-1, +m[3], +(m[4]||0), +(m[5]||0));
+    }
+    const fallback = new Date(str);
+    return isNaN(fallback) ? null : fallback;
+  }
+
+  function daysSince(dateStr) {
+    const start = parseFlexDate(dateStr);
+    if (!start) return '';
+    const diff = Math.floor((new Date() - start) / (1000*60*60*24));
+    return diff;
+  }
+
+  function formatDateTime(dateStr) {
+    if (!dateStr) return '';
+    const d = parseFlexDate(dateStr);
+    if (!d) return dateStr;
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}/${pad(d.getMonth()+1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  // 借用日期預設當下時間（YYYY-MM-DD HH:mm，純文字框，可手動修改）
+  function formatNow() {
+    const d = new Date();
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  document.getElementById('borrowDate').value = formatNow();
+
+  // ---- 自訂日曆選擇器（不用原生 input type=date/datetime-local，避免不同手機排版跑掉）----
+  function initDatePicker(inputId, opts) {
+    opts = opts || {};
+    const input = document.getElementById(inputId);
+    const wrapper = input.parentElement;
+    wrapper.style.position = 'relative';
+
+    const pad = n => String(n).padStart(2, '0');
+    let popup = null;
+    let viewYear, viewMonth, selDate, selHour, selMinute;
+
+    function parseCurrent() {
+      const v = input.value;
+      const m = v && v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{2}):(\d{2}))?/);
+      const now = new Date();
+      if (m) {
+        return {
+          y: +m[1], mo: +m[2]-1, d: +m[3],
+          h: m[4] !== undefined ? +m[4] : now.getHours(),
+          mi: m[5] !== undefined ? +m[5] : now.getMinutes(),
+        };
+      }
+      return { y: now.getFullYear(), mo: now.getMonth(), d: now.getDate(), h: now.getHours(), mi: now.getMinutes() };
+    }
+
+    function closePopup() {
+      if (popup) { popup.remove(); popup = null; }
+      document.removeEventListener('click', outsideClickHandler, true);
+    }
+
+    function outsideClickHandler(e) {
+      if (popup && !popup.contains(e.target) && e.target !== input) closePopup();
+    }
+
+    function commit() {
+      input.value = opts.withTime
+        ? `${selDate.y}-${pad(selDate.mo+1)}-${pad(selDate.d)} ${pad(selHour)}:${pad(selMinute)}`
+        : `${selDate.y}-${pad(selDate.mo+1)}-${pad(selDate.d)}`;
+      input.dispatchEvent(new Event('change'));
+      closePopup();
+    }
+
+    function render() {
+      const first = new Date(viewYear, viewMonth, 1);
+      const startWeekday = first.getDay();
+      const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+      const today = new Date();
+
+      let daysHtml = '';
+      for (let i = 0; i < startWeekday; i++) daysHtml += `<div class="picker-day empty"></div>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isSelected = selDate.y === viewYear && selDate.mo === viewMonth && selDate.d === d;
+        const isToday = today.getFullYear() === viewYear && today.getMonth() === viewMonth && today.getDate() === d;
+        daysHtml += `<button type="button" class="picker-day${isSelected ? ' selected' : ''}${isToday ? ' today' : ''}" data-day="${d}">${d}</button>`;
+      }
+
+      let timeHtml = '';
+      if (opts.withTime) {
+        let hourOptions = '';
+        for (let h = 0; h < 24; h++) hourOptions += `<option value="${h}"${h === selHour ? ' selected' : ''}>${pad(h)}</option>`;
+        let minOptions = '';
+        for (let mi = 0; mi < 60; mi += 5) minOptions += `<option value="${mi}"${mi === selMinute ? ' selected' : ''}>${pad(mi)}</option>`;
+        timeHtml = `
+          <div class="picker-time-row">
+            <select id="${inputId}_hour">${hourOptions}</select>
+            <span>:</span>
+            <select id="${inputId}_min">${minOptions}</select>
+          </div>
+          <button type="button" class="picker-confirm-btn" id="${inputId}_confirm">確定</button>
+        `;
+      }
+
+      popup.innerHTML = `
+        <div class="picker-header">
+          <button type="button" id="${inputId}_prev">‹</button>
+          <span>${viewYear} 年 ${viewMonth+1} 月</span>
+          <button type="button" id="${inputId}_next">›</button>
+        </div>
+        <div class="picker-grid">
+          <div class="picker-weekday">日</div><div class="picker-weekday">一</div><div class="picker-weekday">二</div>
+          <div class="picker-weekday">三</div><div class="picker-weekday">四</div><div class="picker-weekday">五</div><div class="picker-weekday">六</div>
+          ${daysHtml}
+        </div>
+        ${timeHtml}
+      `;
+
+      popup.querySelector(`#${inputId}_prev`).addEventListener('click', () => {
+        viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        render();
+      });
+      popup.querySelector(`#${inputId}_next`).addEventListener('click', () => {
+        viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        render();
+      });
+      popup.querySelectorAll('.picker-day:not(.empty)').forEach(btn => {
+        btn.addEventListener('click', () => {
+          selDate = { y: viewYear, mo: viewMonth, d: +btn.dataset.day };
+          if (opts.withTime) render();
+          else commit();
+        });
+      });
+      if (opts.withTime) {
+        popup.querySelector(`#${inputId}_hour`).addEventListener('change', (e) => { selHour = +e.target.value; });
+        popup.querySelector(`#${inputId}_min`).addEventListener('change', (e) => { selMinute = +e.target.value; });
+        popup.querySelector(`#${inputId}_confirm`).addEventListener('click', commit);
+      }
+    }
+
+    input.addEventListener('click', () => {
+      if (popup) { closePopup(); return; }
+      const cur = parseCurrent();
+      viewYear = cur.y; viewMonth = cur.mo;
+      selDate = { y: cur.y, mo: cur.mo, d: cur.d };
+      selHour = cur.h; selMinute = cur.mi;
+
+      popup = document.createElement('div');
+      popup.className = 'picker-popup';
+      wrapper.appendChild(popup);
+      render();
+
+      setTimeout(() => document.addEventListener('click', outsideClickHandler, true), 0);
+    });
+  }
+
+  initDatePicker('borrowDate', { withTime: true });
+  initDatePicker('filterDateFrom', { withTime: false });
+  initDatePicker('filterDateTo', { withTime: false });
+
+  // Tab 切換
+  document.querySelectorAll('.tabs button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      if (btn.dataset.tab === 'list') loadRecords();
+    });
+  });
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // 送出申請
+  document.getElementById('borrowForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const borrowUnitSel = document.getElementById('borrowUnit').value;
+    const lendUnitSel = document.getElementById('lendUnit').value;
+    const borrowUnitVal = borrowUnitSel === '其他單位' ? document.getElementById('borrowUnitOther').value : borrowUnitSel;
+    const lendUnitVal = lendUnitSel === '其他單位' ? document.getElementById('lendUnitOther').value : lendUnitSel;
+
+    const submitBtn = e.target.querySelector('.submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.textContent = "送出中…";
+
+    const payload = {
+      action: "create",
+      借用日期: document.getElementById('borrowDate').value,
+      借用單位: borrowUnitVal,
+      借出單位: lendUnitVal,
+      物品名稱: document.getElementById('itemName').value,
+      數量: document.getElementById('itemQty').value,
+      借用人姓名: document.getElementById('borrowerName').value,
+      人事號: document.getElementById('borrowerId').value,
+    };
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // 避免觸發 CORS 預檢
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || '送出失敗');
+
+      const summaryItem = payload["物品名稱"];
+      const summaryQty = payload["數量"];
+      const summaryUnit = payload["借用單位"];
+
+      e.target.reset();
+      document.getElementById('borrowDate').value = formatNow();
+      document.getElementById('borrowUnitOther').style.display = 'none';
+      document.getElementById('lendUnitOther').style.display = 'none';
+
+      document.getElementById('successModalDesc').textContent =
+        `${summaryUnit} 借用「${summaryItem}」（${summaryQty}）已登記成功`;
+      document.getElementById('successModal').classList.add('show');
+    } catch (err) {
+      showToast("送出失敗，請稍後再試");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "送出借用申請";
+    }
+  });
+
+  function closeSuccessModal() {
+    document.getElementById('successModal').classList.remove('show');
+  }
+
+  function renderList() {
+    const statusFilter = document.getElementById('filterStatus').value;
+    const unitFilter = document.getElementById('filterUnit').value;
+    const keyword = document.getElementById('filterKeyword').value.trim().toLowerCase();
+    const dateFrom = document.getElementById('filterDateFrom').value;
+    const dateTo = document.getElementById('filterDateTo').value;
+    const container = document.getElementById('listContainer');
+
+    // 未指定任一日期時，預設只顯示最近 14 天內的紀錄，避免一次撈出全部歷史資料
+    let cutoff = null;
+    if (!dateFrom && !dateTo) {
+      const d = new Date();
+      d.setDate(d.getDate() - 14);
+      cutoff = d.toISOString().slice(0,10);
+    }
+
+    let filtered = records.filter(r => {
+      if (statusFilter === 'active' && r.status !== '借用中') return false;
+      if (statusFilter === 'returned' && r.status !== '已歸還') return false;
+      if (unitFilter && r.borrowUnit !== unitFilter) return false;
+      if (keyword && !(String(r.item).toLowerCase().includes(keyword) || String(r.borrowerName).toLowerCase().includes(keyword))) return false;
+      const borrowDateOnly = r.borrowDate.slice(0,10);
+      if (cutoff && borrowDateOnly < cutoff) return false;
+      if (dateFrom && borrowDateOnly < dateFrom) return false;
+      if (dateTo && borrowDateOnly > dateTo) return false;
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      const msg = cutoff
+        ? '最近 14 天內沒有符合條件的紀錄，如需查更早的資料，請填寫借用日期（起）或（迄）'
+        : '目前沒有符合條件的借用紀錄';
+      container.innerHTML = `<div class="empty-note">${msg}</div>`;
+      return;
+    }
+
+    container.innerHTML = filtered.map(r => {
+      const isReturned = r.status === '已歸還';
+      const metaLast = isReturned
+        ? `<span>已於 ${formatDateTime(r.returnedAt)} 由 ${r.returnerName || ''} ${r.returnerId || ''} 歸還</span>`
+        : `<span>已借出 ${daysSince(r.borrowDate)} 天</span>`;
+      const rightSide = isReturned
+        ? `<span class="status-badge" style="background:#efe6d8; color:var(--muted);">已歸還</span>`
+        : `<span class="status-badge status-active">借用中</span>
+           <button class="return-btn" onclick="returnItem('${r.id}')">歸還</button>`;
+      return `
+      <div class="list-card">
+        <div class="list-info">
+          <div class="item-name">${r.item}（${r.qty}）</div>
+          <div class="meta">
+            <span>借用單位：${r.borrowUnit}</span>
+            <span>借出單位：${r.lendUnit}</span>
+            <span>${r.borrowerName} ${r.borrowerId}</span>
+            ${metaLast}
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          ${rightSide}
+        </div>
+      </div>
+    `;
+    }).join('');
+  }
+
+  let pendingReturnId = null;
+
+  function returnItem(id) {
+    const record = records.find(r => r.id === id);
+    if (!record) return;
+    pendingReturnId = id;
+    document.getElementById('returnModalDesc').textContent =
+      `確定要將「${record.item}」標記為已歸還嗎？`;
+    document.getElementById('returnerName').value = '';
+    document.getElementById('returnerId').value = '';
+    document.getElementById('returnModal').classList.add('show');
+  }
+
+  function closeReturnModal() {
+    pendingReturnId = null;
+    document.getElementById('returnModal').classList.remove('show');
+  }
+
+  async function confirmReturn() {
+    const record = records.find(r => r.id === pendingReturnId);
+    if (!record) return;
+
+    const returnerName = document.getElementById('returnerName').value.trim();
+    const returnerId = document.getElementById('returnerId').value.trim();
+    if (!returnerName || !returnerId) {
+      showToast("請填寫歸還人姓名與人事號");
+      return;
+    }
+
+    const confirmBtn = document.querySelector('.modal-confirm');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = "處理中…";
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: "return",
+          id: record.id,
+          歸還人姓名: returnerName,
+          歸還人事號: returnerId,
+        }),
+      });
+      const result = await res.json();
+      if (!result.success) throw new Error(result.error || '更新失敗');
+
+      document.getElementById('returnModal').classList.remove('show');
+      showToast(`「${record.item}」已標記為歸還`);
+      await loadRecords(); // 重新向後端拉最新資料，確保已歸還清單同步更新
+    } catch (err) {
+      showToast("歸還失敗，請稍後再試");
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.textContent = "確認歸還";
+      pendingReturnId = null;
+    }
+  }
+
+  document.getElementById('filterStatus').addEventListener('change', renderList);
+  document.getElementById('filterUnit').addEventListener('change', renderList);
+  document.getElementById('searchBtn').addEventListener('click', renderList);
+</script>
+
+</body>
+</html>
