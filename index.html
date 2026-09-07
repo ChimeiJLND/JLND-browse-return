@@ -500,7 +500,7 @@
           </div>
           <div class="field">
             <label>人事號</label>
-            <input type="text" id="borrowerId" required>
+            <input type="text" id="borrowerId" style="text-transform:uppercase;" required>
           </div>
         </div>
 
@@ -560,7 +560,7 @@
     </div>
     <div class="field" style="text-align:left; margin-bottom:8px;">
       <label style="font-size:0.82rem;">人事號</label>
-      <input type="text" id="returnerId">
+      <input type="text" id="returnerId" style="text-transform:uppercase;">
     </div>
     <div class="modal-actions">
       <button class="modal-cancel" onclick="closeReturnModal()">取消</button>
@@ -800,6 +800,16 @@
   initDatePicker('filterDateFrom', { withTime: false });
   initDatePicker('filterDateTo', { withTime: false });
 
+  // 人事號欄位（借用／歸還）即時強制轉大寫，確保實際存進 Sheet 的值也是大寫，不只是畫面顯示
+  ['borrowerId', 'returnerId'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', () => {
+      const pos = el.selectionStart;
+      el.value = el.value.toUpperCase();
+      el.setSelectionRange(pos, pos);
+    });
+  });
+
   // Tab 切換
   document.querySelectorAll('.tabs button').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -894,7 +904,7 @@
       if (statusFilter === 'active' && r.status !== '借用中') return false;
       if (statusFilter === 'returned' && r.status !== '已歸還') return false;
       if (unitFilter && r.borrowUnit !== unitFilter) return false;
-      if (keyword && !(r.item.toLowerCase().includes(keyword) || r.borrowerName.toLowerCase().includes(keyword))) return false;
+      if (keyword && !(String(r.item).toLowerCase().includes(keyword) || String(r.borrowerName).toLowerCase().includes(keyword))) return false;
       const borrowDateOnly = r.borrowDate.slice(0,10);
       if (cutoff && borrowDateOnly < cutoff) return false;
       if (dateFrom && borrowDateOnly < dateFrom) return false;
